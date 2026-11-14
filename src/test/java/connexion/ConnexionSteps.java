@@ -4,6 +4,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.assertions.LocatorAssertions;
 import com.microsoft.playwright.assertions.PlaywrightAssertions;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -22,9 +23,9 @@ public class ConnexionSteps {
     private Page page;
     private PageConnexionGitHub connexion;
 
-    // ---------- Avant / après chaque scénario ----------
+    // ---------- Avant / après chaque scénario GitHub uniquement ----------
 
-    @Before
+    @Before("@github")
     public void ouvrirNavigateur() {
         playwright = Playwright.create();
         boolean cache = !"false".equalsIgnoreCase(System.getenv("HEADLESS"));
@@ -35,11 +36,11 @@ public class ConnexionSteps {
         PlaywrightAssertions.setDefaultAssertionTimeout(15000);
     }
 
-    @After
+    @After("@github")
     public void fermerNavigateur(Scenario scenario) {
         if (scenario.isFailed()) {
             // Capture d'écran jointe au rapport en cas d'échec (cours p. 284)
-            scenario.attach(page.screenshot(), "image/png", "capture-echec");
+            scenario.attach(page.screenshot(), "image/png", "capture-echec-github");
         }
         playwright.close();
     }
@@ -74,9 +75,11 @@ public class ConnexionSteps {
 
     @Alors("je suis connecté à mon compte")
     public void jeSuisConnecte() {
-        // GitHub place le login de l'utilisateur connecté dans <meta name="user-login">
+        // GitHub place le login de l'utilisateur connecté dans <meta name="user-login">.
+        // Délai de 2 minutes : laisse le temps de saisir à la main le code 2FA si GitHub le demande.
         assertThat(page.locator("meta[name='user-login']"))
-                .hasAttribute("content", Pattern.compile(".+"));
+                .hasAttribute("content", Pattern.compile(".+"),
+                        new LocatorAssertions.HasAttributeOptions().setTimeout(120000));
     }
 
     @Alors("GitHub affiche le message {string}")

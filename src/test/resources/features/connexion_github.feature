@@ -1,4 +1,5 @@
 # language: fr
+@github
 Fonctionnalité: Connexion à un compte GitHub
   Afin de gérer mes dépôts de code
   En tant qu'étudiant inscrit sur GitHub
